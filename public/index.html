@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Next-Level ResQNet | Real Crisis Optimization System</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span>RQ</span>
+      <strong>Next-Level ResQNet</strong>
+    </a>
+    <nav>
+      <a href="#live">Live Data</a>
+      <a href="#plan">Optimization</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#stress">Stress Test</a>
+    </nav>
+    <p>Made by <strong>Viren Singh</strong></p>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">USGS + Weather APIs · Node backend · Real graph algorithms</p>
+        <h1>Real-time crisis decisions powered by measurable optimization.</h1>
+        <p class="hero-text">
+          ResQNet fetches live earthquake and weather signals, builds a rescue graph across cities,
+          runs Dijkstra for fastest routes, solves max-flow allocation, and evaluates improvement over a no-system baseline.
+        </p>
+        <div class="actions">
+          <button id="runBtn">Run System</button>
+          <button class="ghost" id="stressBtn">Run Stress Test</button>
+        </div>
+      </div>
+
+      <section class="stat-grid">
+        <article><span>Max Flow</span><strong id="maxFlow">--</strong></article>
+        <article><span>Coverage</span><strong id="coverage">--</strong></article>
+        <article><span>Avg Rescue Time</span><strong id="avgTime">--</strong></article>
+        <article><span>Runtime</span><strong id="runtime">--</strong></article>
+      </section>
+    </section>
+
+    <section class="controls">
+      <label>
+        City
+        <select id="citySelect">
+          <option value="all">All cities</option>
+        </select>
+      </label>
+      <label>
+        People in first priority incident
+        <input id="peopleInput" type="number" value="1000" min="100" step="100" />
+      </label>
+      <label>
+        Objective
+        <select id="objectiveSelect">
+          <option value="balanced">Balanced</option>
+          <option value="fastest">Fastest rescue</option>
+          <option value="coverage">Max coverage</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="status-card" id="live">
+      <strong id="status">Backend ready. Click Run System.</strong>
+      <p id="sourceNotes">Live data sources will appear here after the backend fetches them.</p>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Live Incidents</h2>
+          <span id="incidentCount">0 incidents</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Incident</th>
+                <th>City</th>
+                <th>Source</th>
+                <th>People</th>
+                <th>Severity</th>
+              </tr>
+            </thead>
+            <tbody id="incidentRows"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel" id="plan">
+        <div class="panel-head">
+          <h2>Optimized Rescue Plan</h2>
+          <span id="graphSize">0 nodes · 0 edges</span>
+        </div>
+        <div id="planList" class="plan-list"></div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel" id="evaluation">
+        <div class="panel-head">
+          <h2>Evaluation: Without System vs With ResQNet</h2>
+          <span id="gain">--</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Without system</th>
+                <th>With ResQNet</th>
+              </tr>
+            </thead>
+            <tbody id="evaluationRows"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel" id="stress">
+        <div class="panel-head">
+          <h2>Scaling + Stress Test</h2>
+          <span id="stressStatus">Not run</span>
+        </div>
+        <div class="stress-grid" id="stressGrid"></div>
+      </article>
+    </section>
+
+    <section class="methods">
+      <h2>System Architecture</h2>
+      <div class="method-grid">
+        <article><strong>Backend data ingestion</strong><span>Node.js fetches USGS earthquake GeoJSON and Open-Meteo weather data.</span></article>
+        <article><strong>Dijkstra implementation</strong><span>Server builds graph nodes and edges, then computes shortest hub-to-crisis routes.</span></article>
+        <article><strong>Edmonds-Karp max-flow</strong><span>Allocates finite rescue capacity through constrained graph edges.</span></article>
+        <article><strong>Evaluation + stress</strong><span>Compares baseline response against ResQNet and tests scaling with synthetic cities/incidents.</span></article>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
