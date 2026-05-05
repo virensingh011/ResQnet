@@ -1,0 +1,24 @@
+{
+  "name": "next-level-resqnet",
+  "version": "2.0.0",
+  "description": "Advanced real-time crisis optimization system with live data, backend optimization, evaluation, and stress testing.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/graph.js && node --check src/optimizer.js && node --check src/dataSources.js && node --check src/evaluation.js && node --check src/stressTest.js",
+    "stress": "node src/stressTest.js"
+  },
+  "keywords": [
+    "crisis-response",
+    "dijkstra",
+    "max-flow",
+    "usgs",
+    "weather",
+    "optimization"
+  ],
+  "author": "Viren Singh",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
