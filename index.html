@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph-Based Emergency Routing System</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css?v=research-map-1" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <strong>Graph-Based Emergency Routing System</strong>
+    </a>
+    <nav>
+      <a href="#map">Map</a>
+      <a href="#decision">Decision</a>
+      <a href="#graph-lab">Graph Lab</a>
+      <a href="#research">Research Model</a>
+      <a href="#stress">Stress Test</a>
+      <button id="darkModeBtn" type="button">Dark</button>
+    </nav>
+    <p>Made by <strong>Viren Singh</strong></p>
+  </header>
+
+  <main>
+    <section class="command-board" id="overview">
+      <aside class="controls" aria-label="Scenario controls">
+        <div>
+          <span class="section-kicker">Scenario Input</span>
+          <h1>Risk-aware path optimization</h1>
+          <p>Input hazard data, graph nodes, and route stress. The system computes weighted routes and returns the safest feasible response path.</p>
+        </div>
+        <label>
+          City
+          <select id="citySelect">
+            <option value="all">All cities</option>
+          </select>
+        </label>
+        <label>
+          People in first priority incident
+          <input id="peopleInput" type="number" value="1000" min="100" step="100" />
+        </label>
+        <label>
+          Objective
+          <select id="objectiveSelect">
+            <option value="balanced">Balanced risk + speed</option>
+            <option value="fastest">Fastest first arrival</option>
+            <option value="coverage">Maximum coverage</option>
+          </select>
+        </label>
+        <label>
+          Route stress
+          <select id="stressSelect">
+            <option value="normal">Normal access</option>
+            <option value="congested">Congested roads</option>
+            <option value="blocked">Flooded or blocked routes</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button id="runBtn">Run Decision</button>
+          <button class="ghost" id="stressBtn">Run Stress Test</button>
+        </div>
+      </aside>
+
+      <section class="map-shell" aria-label="Interactive rescue map">
+        <div id="map"></div>
+        <div id="mapFallback" class="map-fallback" aria-hidden="true"></div>
+        <div class="map-legend">
+          <span><i class="legend-dot hub"></i> Hub</span>
+          <span><i class="legend-dot incident"></i> Incident</span>
+          <span><i class="legend-line"></i> Selected route</span>
+        </div>
+        <div class="map-overlay">
+          <article>
+            <span>Priority City</span>
+            <strong id="priorityCity">--</strong>
+          </article>
+          <article>
+            <span>Risk Weight</span>
+            <strong id="riskWeight">--</strong>
+          </article>
+          <article>
+            <span>Stress Mode</span>
+            <strong id="stressMode">--</strong>
+          </article>
+        </div>
+      </section>
+
+      <aside class="decision-card" id="decision">
+        <span class="section-kicker">Decision Output</span>
+        <h2 id="decisionTitle">Waiting for route decision</h2>
+        <p id="decisionReason">Run the system to see which hub should respond first and why.</p>
+        <div class="pipeline-mini" aria-label="Decision pipeline">
+          <article>
+            <span>Input</span>
+            <strong>Hazards + nodes + stress</strong>
+          </article>
+          <article>
+            <span>Process</span>
+            <strong>Weighted graph routing</strong>
+          </article>
+          <article>
+            <span>Output</span>
+            <strong>Safest path + risk score</strong>
+          </article>
+        </div>
+        <div class="decision-metrics">
+          <article><span>Max Flow</span><strong id="maxFlow">--</strong></article>
+          <article><span>Coverage</span><strong id="coverage">--</strong></article>
+          <article><span>Avg Time</span><strong id="avgTime">--</strong></article>
+          <article><span>Runtime</span><strong id="runtime">--</strong></article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="pipeline-panel" aria-label="Algorithm pipeline">
+      <article>
+        <span class="step-number">1</span>
+        <div>
+          <strong>Input</strong>
+          <p>Hazard severity, affected people, rescue hubs, incidents, and selected route stress.</p>
+        </div>
+      </article>
+      <article>
+        <span class="step-number">2</span>
+        <div>
+          <strong>Process</strong>
+          <p>Build a weighted graph where stress increases travel cost and reduces route capacity.</p>
+        </div>
+      </article>
+      <article>
+        <span class="step-number">3</span>
+        <div>
+          <strong>Output</strong>
+          <p>Rank feasible paths by risk-aware cost and show the safest first dispatch route.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="status-card" id="live">
+      <div>
+        <span class="section-kicker">System Status</span>
+        <strong id="status">Backend ready. Click Run Decision.</strong>
+      </div>
+      <p id="sourceNotes">Live data sources will appear here after the optimizer runs.</p>
+    </section>
+
+    <section class="graph-lab" id="graph-lab">
+      <aside class="graph-controls">
+        <span class="section-kicker">Interactive Graph</span>
+        <h2>Dijkstra vs A*</h2>
+        <div class="segmented" role="group" aria-label="Algorithm selector">
+          <button id="dijkstraBtn" class="active" type="button">Dijkstra</button>
+          <button id="astarBtn" type="button">A*</button>
+        </div>
+        <label>
+          Flood level
+          <input id="floodSlider" type="range" min="0" max="100" value="20" />
+          <span id="floodValue">20%</span>
+        </label>
+        <label>
+          Earthquake severity
+          <input id="quakeSlider" type="range" min="0" max="100" value="35" />
+          <span id="quakeValue">35%</span>
+        </label>
+        <label>
+          Traffic congestion
+          <input id="trafficSlider" type="range" min="0" max="100" value="30" />
+          <span id="trafficValue">30%</span>
+        </label>
+        <div class="preset-row" aria-label="Scenario presets">
+          <button class="ghost" id="presetQuake" type="button">Earthquake</button>
+          <button class="ghost" id="presetFlood" type="button">Flood</button>
+          <button class="ghost" id="presetNormal" type="button">Normal</button>
+        </div>
+        <button id="animatePathBtn" type="button">Animate Path</button>
+      </aside>
+
+      <section class="graph-stage">
+        <div class="graph-toolbar">
+          <strong id="graphModeLabel">Weighted graph routing</strong>
+          <span id="graphLoading">Ready</span>
+        </div>
+        <div id="cyGraph" aria-label="Draggable route graph"></div>
+      </section>
+
+      <aside class="info-panel">
+        <span class="section-kicker">Route Explanation</span>
+        <h2 id="infoTitle">Select a node or edge</h2>
+        <p id="infoBody">Click graph nodes or edges to inspect risk, weight, and connectivity. Drag nodes to test layout readability.</p>
+        <div class="metric-stack">
+          <article><span>Nodes visited</span><strong id="nodesVisited">--</strong></article>
+          <article><span>Path cost</span><strong id="pathCost">--</strong></article>
+          <article><span>Execution time</span><strong id="executionTime">--</strong></article>
+        </div>
+        <div class="cost-breakdown" id="costBreakdown"></div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Route Ranking</h2>
+          <span id="graphSize">0 nodes - 0 edges</span>
+        </div>
+        <div id="planList" class="plan-list"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Active Incidents</h2>
+          <span id="incidentCount">0 incidents</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Incident</th>
+                <th>City</th>
+                <th>People</th>
+                <th>Severity</th>
+                <th>Risk weight</th>
+              </tr>
+            </thead>
+            <tbody id="incidentRows"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Evaluation: Baseline vs ResQNet</h2>
+          <span id="gain">--</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Without system</th>
+                <th>With ResQNet</th>
+              </tr>
+            </thead>
+            <tbody id="evaluationRows"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel" id="stress">
+        <div class="panel-head">
+          <h2>Scaling + Stress Test</h2>
+          <span id="stressStatus">Not run</span>
+        </div>
+        <div class="stress-grid" id="stressGrid"></div>
+      </article>
+    </section>
+
+    <section class="methods" id="research">
+      <div class="panel-head clean">
+        <div>
+          <span class="section-kicker">Research Model</span>
+          <h2>Graph-Based Emergency Routing System with Risk-Aware Path Optimization</h2>
+        </div>
+      </div>
+      <div class="method-grid">
+        <article>
+          <strong>Graph model</strong>
+          <span>Hubs and incidents are nodes. A directed edge exists when a hub can reach an incident inside the regional route limit.</span>
+        </article>
+        <article>
+          <strong>Risk-weighted routing</strong>
+          <span>Each edge cost combines travel time, severity, demand load, route stress, and hazard type. Higher stress directly increases route cost.</span>
+        </article>
+        <article>
+          <strong>Capacity allocation</strong>
+          <span>Edmonds-Karp max-flow sends limited rescue capacity through feasible hub-to-incident edges.</span>
+        </article>
+        <article>
+          <strong>Decision output</strong>
+          <span>The first route is the lowest-risk feasible allocation after stress and capacity are applied, not just the shortest visual line.</span>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+  <script src="app.js?v=research-map-1"></script>
+</body>
+</html>
